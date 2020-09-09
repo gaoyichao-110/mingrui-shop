@@ -13,6 +13,7 @@ import com.baidu.shop.service.SpecificationService;
 import com.baidu.shop.utils.BaiduBeanUtil;
 import com.baidu.shop.utils.ObjectUtill;
 import com.baidu.shop.utils.StringUtil;
+import javafx.beans.binding.ObjectExpression;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
@@ -80,9 +81,7 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
         example.createCriteria().andEqualTo("groupId",id);
         List<SpecParamEntity> list = specParamMapper.selectByExample(example);
 
-        if(list.size() > 0){
-            return this.setResultError("该规格里边有参数,不能被删除");
-        }
+        if(list.size() > 0) return this.setResultError("该规格里边有参数,不能被删除");
         
         specificationEntityMapper.deleteByPrimaryKey(id);
         return this.setResultSuccess();
@@ -93,9 +92,18 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
     @Override
     public Result<List<SpecParamEntity>> listSpecParam(SpecParamDTO specParamDTO) {
 
-        if(ObjectUtill.isNull(specParamDTO.getGroupId())) {return this.setResultSuccess("规格组id不能为空");};
-            Example example = new Example(SpecParamEntity.class);
-            example.createCriteria().andEqualTo("groupId",specParamDTO.getGroupId());
+       // if(ObjectUtill.isNull(specParamDTO.getGroupId())) {return this.setResultSuccess("规格组id不能为空");};
+        Example example = new Example(SpecParamEntity.class);
+        Example.Criteria criteria = example.createCriteria();
+
+        if(ObjectUtill.isNotNull(specParamDTO.getGroupId())){
+            criteria.andEqualTo("groupId",specParamDTO.getGroupId());
+        }
+
+        if(ObjectUtill.isNotNull(specParamDTO.getCid())){
+            criteria.andEqualTo("cid",specParamDTO.getCid());
+        }
+
 
         List<SpecParamEntity> list = specParamMapper.selectByExample(example);
 

@@ -9,8 +9,10 @@ import com.baidu.shop.mapper.BrandMapper;
 import com.baidu.shop.mapper.CategoryBrandMapper;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.utils.BaiduBeanUtil;
+import com.baidu.shop.utils.ObjectUtill;
 import com.baidu.shop.utils.PinyinUtil;
 import com.baidu.shop.utils.StringUtil;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
@@ -38,18 +40,34 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     @Resource
     private CategoryBrandMapper categoryBrandMapper;
 
+    @Override
+    public Result<List<BrandEntity>> getCategoryAndBrand(Integer cid) {
+
+            List<BrandEntity> list2 = brandMapper.getCategoryAndBrand(cid);
+            return this.setResultSuccess(list2);
+
+
+
+    }
+
     @Transactional
     @Override
     public Result<PageInfo<BrandEntity>> getBrandInfo(BrandDTO brandDTO) {
+
         //分页
-        PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
+        if(ObjectUtill.isNotNull(brandDTO.getPage()) && ObjectUtill.isNotNull(brandDTO.getRows())){
+            PageHelper.startPage(brandDTO.getPage(),brandDTO.getRows());
+        }
 
         //排序
         Example example = new Example(BrandEntity.class);
         if(StringUtil.isNotEmpty(brandDTO.getSort())) example.setOrderByClause(brandDTO.getOrderByClause());
 
+        Example.Criteria criteria = example.createCriteria();
+        if(ObjectUtill.isNotNull(brandDTO.getId()))
+            criteria.andEqualTo("id",brandDTO.getId());
         //条件查询
-        if(StringUtil.isNotEmpty(brandDTO.getName())) example.createCriteria().
+        if(StringUtil.isNotEmpty(brandDTO.getName())) criteria.
                 andLike("name","%"+brandDTO.getName()+"%");
 
         //查询
@@ -121,6 +139,8 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
 
         return this.setResultSuccess();
     }
+
+
 
     //删除关系表中的数据
     private void deleteCategoryAndBrand(Integer id){

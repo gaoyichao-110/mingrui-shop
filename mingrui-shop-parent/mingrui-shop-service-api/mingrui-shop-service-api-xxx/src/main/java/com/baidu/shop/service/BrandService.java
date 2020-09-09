@@ -12,6 +12,8 @@ import org.apache.ibatis.annotations.Delete;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Api(tags = "品牌接口")
 public interface BrandService {
 
@@ -30,4 +32,8 @@ public interface BrandService {
     @ApiOperation(value = "通过id删除品牌信息")
     @DeleteMapping(value = "brand/delete")
     public Result<JsonObject> delete(Integer id);
+
+    @ApiOperation(value="根据分类id查询出品牌信息")
+    @GetMapping(value = "brand/getCategoryAndBrand")
+    public Result<List<BrandEntity>> getCategoryAndBrand(Integer cid);
 }
