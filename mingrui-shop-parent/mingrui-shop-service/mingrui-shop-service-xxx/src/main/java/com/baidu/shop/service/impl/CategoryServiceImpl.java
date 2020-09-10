@@ -1,16 +1,10 @@
 package com.baidu.shop.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.baidu.shop.entity.BrandEntity;
-import com.baidu.shop.entity.CategoryBrandEntity;
-import com.baidu.shop.entity.SpecificationEntity;
-import com.baidu.shop.mapper.BrandMapper;
-import com.baidu.shop.mapper.CategoryBrandMapper;
-import com.baidu.shop.mapper.CategoryMapper;
+import com.baidu.shop.entity.*;
+import com.baidu.shop.mapper.*;
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
-import com.baidu.shop.entity.CategoryEntity;
-import com.baidu.shop.mapper.SpecificationEntityMapper;
 import com.baidu.shop.service.CategoryService;
 
 import com.baidu.shop.utils.ObjectUtill;
@@ -40,6 +34,10 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     @Resource
     private SpecificationEntityMapper specificationEntityMapper;
 
+    @Resource
+    private SpuMapper spuMapper;
+
+    //查询商品分类
     @Transactional
     @Override
     public Result<List<CategoryEntity>> getCategoryByPid(Integer pid) {
@@ -91,13 +89,21 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
             return this.setResultError("当前节点为父级id，不能被删除");
         };
 
+        Example example3 = new Example(SpuEntity.class);
+        example3.createCriteria().andEqualTo("cid3",id);
+        List<SpuEntity> list3 = spuMapper.selectByExample(example3);
+
+        if(list3.size() > 0){
+            return this.setResultError("该分类下边有商品,不能被删除");
+        }
+
         //商品被品牌绑定,不能被删除
         Example example1 = new Example(CategoryBrandEntity.class);
         example1.createCriteria().andEqualTo("categoryId",id);
         List<CategoryBrandEntity> list1 = categoryBrandMapper.selectByExample(example1);
 
         if(list1.size() > 0){
-                return this.setResultError("该商品被品牌绑定,不能被删除");
+                return this.setResultError("该商品分类被品牌绑定,不能被删除");
         }
 
         //商品被规格绑定,不能被删除
@@ -106,12 +112,12 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         List<SpecificationEntity> list2 = specificationEntityMapper.selectByExample(example2);
 
         if(list2.size() > 0){
-            return this.setResultError("该商品有规格参数.不能被删除");
+            return this.setResultError("该商品分类有规格参数.不能被删除");
         }
 
         //查询商品的父节点,父节点不能被删除
         Example example = new Example(CategoryEntity.class);
-        example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
+        example.createCriteria().andEqualTo("partId",categoryEntity.getParentId());
         List<CategoryEntity> list = categoryMapper.selectByExample(example);
 
         //如果查询出来的数据只有一条，就将父级的id改为0

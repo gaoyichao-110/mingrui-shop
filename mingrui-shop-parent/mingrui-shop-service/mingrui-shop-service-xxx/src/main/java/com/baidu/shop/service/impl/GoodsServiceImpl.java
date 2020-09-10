@@ -125,23 +125,28 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         //这里放的是新的sku数据,把这个sku数据放到调用的saveSkuStock方法里.
         List<SkuDTO> skus = spuDTO.getSkus();
 
+        //方法中定义的参数,接收的时候参数需要赋值
         this.saveSkuStock(spuDTO.getSkus(),spuDTO.getId(),date);
 
         return this.setResultSuccess();
     }
     //商品删除
+    @Transactional
     @Override
     public Result<JsonObject> delete(Integer spuId) {
         spuMapper.deleteByPrimaryKey(spuId);
         spuDetailEntityMapper.deleteByExample(spuId);
-
+        //查询出来skuId
         List<Long> longs = this.listSku(spuId);
+        //判断一下,skuId有数据的话就删除,没有就不删除,防止所有数据被删除
         if(longs.size() > 0){
             skuEntityMapper.deleteByIdList(longs);
             stockEntityMapper.deleteByIdList(longs);
         }
         return this.setResultSuccess();
     }
+
+
 
     //查询出sku的数据
     private List<Long> listSku(Integer spuId){
@@ -213,8 +218,6 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     }
 
 
-
-
     private List<SpuEntity> collect2(SpuDTO spuDTO){
 
         //构建条件查询
@@ -238,6 +241,25 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         List<SpuEntity> list = spuMapper.selectByExample(example);
 
         return list;
+    }
+
+
+    @Transactional
+    @Override
+    public Result<JsonObject> updateItems(SpuDTO spuDTO) {
+        SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO, SpuEntity.class);
+        //将传进来的id传到spuEntityid里,然后spuEntity执行的数据就是传入id的那条数据
+        spuEntity.setId(spuDTO.getId());
+        //如果传进来的saleable==1就将它修改为0,不等于1就修改为1
+        if(spuEntity.getSaleable() == 1){
+            spuEntity.setSaleable(0);
+            spuMapper.updateByPrimaryKeySelective(spuEntity);
+            return this.setResultSuccess("商品下架成功");
+        }else{
+            spuEntity.setSaleable(1);
+            spuMapper.updateByPrimaryKeySelective(spuEntity);
+            return this.setResultSuccess("商品上架成功");
+        }
     }
 
 }

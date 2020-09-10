@@ -51,7 +51,7 @@ public class SpuDTO extends BaseDTO {
     @NotNull(message ="商品所属品牌id不能为空",groups = {MingruiOperation.Add.class})
     private  Integer brandId;
 
-    @ApiModelProperty(value = "是否上架,0上架,1上架",example = "1")
+    @ApiModelProperty(value = "是否上架,0下架,1上架",example = "1")
     private Integer saleable;
 
     @ApiModelProperty(value = "是否有效,0已删除,1有效")

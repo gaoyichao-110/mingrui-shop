@@ -5,8 +5,12 @@ import com.baidu.shop.base.Result;
 import com.baidu.shop.dto.BrandDTO;
 import com.baidu.shop.entity.BrandEntity;
 import com.baidu.shop.entity.CategoryBrandEntity;
+import com.baidu.shop.entity.SkuEntity;
+import com.baidu.shop.entity.SpuEntity;
 import com.baidu.shop.mapper.BrandMapper;
 import com.baidu.shop.mapper.CategoryBrandMapper;
+import com.baidu.shop.mapper.SkuEntityMapper;
+import com.baidu.shop.mapper.SpuMapper;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.utils.BaiduBeanUtil;
 import com.baidu.shop.utils.ObjectUtill;
@@ -38,15 +42,15 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     private BrandMapper brandMapper;
 
     @Resource
+    private SpuMapper spuMapper;
+    @Resource
     private CategoryBrandMapper categoryBrandMapper;
 
+    //这个查询是一次性查询出来所有的数据,压力太大
     @Override
     public Result<List<BrandEntity>> getCategoryAndBrand(Integer cid) {
-
             List<BrandEntity> list2 = brandMapper.getCategoryAndBrand(cid);
             return this.setResultSuccess(list2);
-
-
 
     }
 
@@ -64,11 +68,9 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
         if(StringUtil.isNotEmpty(brandDTO.getSort())) example.setOrderByClause(brandDTO.getOrderByClause());
 
         Example.Criteria criteria = example.createCriteria();
-        if(ObjectUtill.isNotNull(brandDTO.getId()))
-            criteria.andEqualTo("id",brandDTO.getId());
+        if(ObjectUtill.isNotNull(brandDTO.getId())) criteria.andEqualTo("id",brandDTO.getId());
         //条件查询
-        if(StringUtil.isNotEmpty(brandDTO.getName())) criteria.
-                andLike("name","%"+brandDTO.getName()+"%");
+        if(StringUtil.isNotEmpty(brandDTO.getName())) criteria.andLike("name","%"+brandDTO.getName()+"%");
 
         //查询
         List<BrandEntity> list = brandMapper.selectByExample(example);
@@ -133,6 +135,15 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     @Transactional
     @Override
     public Result<JsonObject> delete(Integer id) {
+
+        Example example = new Example(SpuEntity.class);
+        example.createCriteria().andEqualTo("brandId",id);
+        List<SpuEntity> list = spuMapper.selectByExample(example);
+
+        if(list.size() > 0){
+            return this.setResultError("该品牌下边有商品,不能被删除");
+        }
+
         brandMapper.deleteByPrimaryKey(id);
 
         this.deleteCategoryAndBrand(id);

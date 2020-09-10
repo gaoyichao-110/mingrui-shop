@@ -44,4 +44,9 @@ public interface GoodsService {
     @DeleteMapping(value = "goods/delete")
     Result<JsonObject> delete(Integer spuId);
 
+
+    @ApiOperation(value = "修改商品上下架的状态")
+    @PutMapping(value = "goods/updateItems")
+    Result<JsonObject> updateItems(@RequestBody SpuDTO spuDTO);
+
 }
