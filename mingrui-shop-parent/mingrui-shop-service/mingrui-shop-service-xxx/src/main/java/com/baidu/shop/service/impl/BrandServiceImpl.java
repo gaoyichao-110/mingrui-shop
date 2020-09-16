@@ -107,8 +107,8 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
 
         brandMapper.insertSelective(brandEntity);
 
-        //批量新增
-        categoryBrand(brandDTO,brandEntity);
+        //调用批量新增方法
+        this.categoryBrand(brandDTO,brandEntity);
 
         return this.setResultSuccess();
     }
@@ -164,17 +164,17 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
     public void categoryBrand(BrandDTO brandDTO,BrandEntity brandEntity){
         //批量新增
         if(brandDTO.getCategory().contains(",")){
-
+            //通过split方法分割字符串的Array
             String[] split = brandDTO.getCategory().split(",");
-            List<String> list = Arrays.asList(split);
+            List<String> list = Arrays.asList(split);//使用Arrays.asList将Array转换为List,将传进来的数据放到List集合中
 
-            List<CategoryBrandEntity> categoryBrandEntity = new ArrayList<>();
+            List<CategoryBrandEntity> categoryBrandEntity = new ArrayList<>();//将关系表生成一个集合
 
-            list.stream().forEach(cid -> {
-                CategoryBrandEntity categoryBrandEntity1 = new CategoryBrandEntity();
-                categoryBrandEntity1.setCategoryId(StringUtil.toInteger(cid));
-                categoryBrandEntity1.setBrandId(brandEntity.getId());
-                categoryBrandEntity.add(categoryBrandEntity1);
+            list.stream().forEach(cid -> {//使用JDK1.8的stream,遍历list
+                CategoryBrandEntity categoryBrandEntity1 = new CategoryBrandEntity();//实例化关系表
+                categoryBrandEntity1.setCategoryId(StringUtil.toInteger(cid));//cid里边包含了Category里边所有的id,所以是字符串类型的,将cid复制到关系表中,就是说将Category集合里边的id都放到了关系表
+                categoryBrandEntity1.setBrandId(brandEntity.getId());//将品牌的id放到关系表中
+                categoryBrandEntity.add(categoryBrandEntity1);//将赋值好的categoryBrandEntity1放到中间表的集合,最后批量新增这个中间表
             });
 
             //通过split方法分割字符串的Array

@@ -12,8 +12,9 @@
         <module>mingrui-shop-commoms</module>
         <module>mingrui-shop-service</module>
         <module>mingrui-shop-service-api</module>
-        <module>mingrui-shop-eureka</module>
-        <module>mingrui-shop-basic-eureka-server</module>
+        <module>mingrui-shop-service/mingrui-shop-service-search</module>
+        <module>mingrui-shop-service-api/mingrui-shop-service-api-search</module>
+        <module>mingrui-shop-service-api/mingrui-shop-service-api-xxx</module>
         <module>mingrui-shop-basics/mingrui-shop-basic-eureka-server</module>
         <module>mingrui-shop-service/mingrui-shop-service-xxx</module>
         <module>mingrui-shop-basics/mingrui-shop-basic-zuul-serer</module>
@@ -36,7 +37,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.2.RELEASE</version>
+        <version>2.3.1.RELEASE</version>
         <!--始终从仓库中获取，不从本地路径获取-->
         <relativePath />
     </parent>

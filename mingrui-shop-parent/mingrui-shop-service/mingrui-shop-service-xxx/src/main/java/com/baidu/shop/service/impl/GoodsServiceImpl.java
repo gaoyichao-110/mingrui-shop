@@ -179,7 +179,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     }
 
     @Override
-    public Result<PageInfo<SpuEntity>> getSpuInfo(SpuDTO spuDTO) {
+    public Result<List<SpuDTO>> getSpuInfo(SpuDTO spuDTO) {
 
         //分页判断page和rows是否为空
         if(ObjectUtill.isNotNull((spuDTO.getPage())) && ObjectUtill.isNotNull(spuDTO.getRows())) PageHelper.startPage(spuDTO.getPage(),spuDTO.getRows());
