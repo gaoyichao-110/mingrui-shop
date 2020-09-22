@@ -10,6 +10,7 @@ import com.baidu.shop.validate.group.MingruiOperation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.ibatis.annotations.Delete;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +39,7 @@ public interface SpecificationService {
 
     @ApiOperation(value="通过规格id查询里边参数")
     @GetMapping(value="specparam/listSpecParam")
-    public Result<List<SpecParamEntity>> listSpecParam(SpecParamDTO specParamDTO);
+    public Result<List<SpecParamEntity>> listSpecParam(@SpringQueryMap SpecParamDTO specParamDTO);
 
     @ApiOperation(value="给规格上传参数")
     @PostMapping(value = "specparam/save")
@@ -52,6 +53,7 @@ public interface SpecificationService {
     @ApiOperation(value="删除规格中的数据")
     @DeleteMapping(value = "specparam/delete")
     Result<JSONObject> specDelete(Integer id);
+
 
 
 }
