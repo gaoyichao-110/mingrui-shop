@@ -28,6 +28,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName BrandServiceImpl
@@ -52,6 +53,18 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
             List<BrandEntity> list2 = brandMapper.getCategoryAndBrand(cid);
             return this.setResultSuccess(list2);
 
+    }
+
+    @Override
+    public Result<List<BrandEntity>> getBrandByIdList(String brandList1) {
+
+        String[] split = brandList1.split(",");
+        List<String> strings = Arrays.asList(split);
+        List<Integer> collect = strings.stream().map(brandMapper -> Integer.parseInt(brandList1)).collect(Collectors.toList());
+
+        List<BrandEntity> list = brandMapper.selectByIdList(collect);
+
+        return this.setResultSuccess(list);
     }
 
     @Transactional

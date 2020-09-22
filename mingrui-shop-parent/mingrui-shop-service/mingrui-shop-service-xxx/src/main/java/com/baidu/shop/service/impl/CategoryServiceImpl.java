@@ -13,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @ClassName CategoryServiceImpl
@@ -145,6 +147,22 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         return null;
     }
 
+    @Override
+    public Result<List<CategoryEntity>> getCategoryByIdList(String cidStr) {
+
+//        List<String> strings = Arrays.asList(cidStr.split(","));
+//
+//        List<Integer> cidList = strings.stream().map(cidStrs -> {
+//            Integer.parseInt(cidStr);
+//        }).collect(Collectors.toList());
+
+        List<Integer> cidList = Arrays.asList(cidStr.split(","))
+                .stream().map(cidstrs -> Integer.parseInt(cidStr))
+                .collect(Collectors.toList());
+
+        List<CategoryEntity> list = categoryMapper.selectByIdList(cidList);
+        return this.setResultSuccess(list);
+    }
 
 
 }

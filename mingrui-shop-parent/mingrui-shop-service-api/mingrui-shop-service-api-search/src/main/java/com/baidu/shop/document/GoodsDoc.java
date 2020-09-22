@@ -23,7 +23,7 @@ public class GoodsDoc {
     private Long id;
 
     @Field(type = FieldType.Text,analyzer = "ik_max_word")
-    private String titile;
+    private String title;
 
     @Field(type = FieldType.Text,analyzer = "lk_max_word")
     private String brandName;
