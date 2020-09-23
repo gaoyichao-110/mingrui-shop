@@ -233,6 +233,10 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             criteria.andEqualTo("saleable",spuDTO.getSaleable());
         }
 
+        if(ObjectUtill.isNotNull(spuDTO.getId())){
+            criteria.andEqualTo("id",spuDTO.getId());
+        }
+
         //排序
         if(ObjectUtill.isNotNull(spuDTO.getSort())){
             example.setOrderByClause(spuDTO.getOrderByClause());
