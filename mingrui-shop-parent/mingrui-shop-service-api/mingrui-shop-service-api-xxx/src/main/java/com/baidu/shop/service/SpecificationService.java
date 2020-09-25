@@ -21,7 +21,7 @@ public interface SpecificationService {
 //    接口文档注解
     @ApiOperation(value="通过条件查询规格组")
     @GetMapping(value="specgroup/listSpecification")
-    public Result<List<SpecificationEntity>> listSpecification(SpecificationDTO specificationDTO);
+    public Result<List<SpecificationEntity>> listSpecification(@SpringQueryMap SpecificationDTO specificationDTO);
 
     @ApiOperation(value = "给规格新增数据")
     @PostMapping(value="specgroup/save")
@@ -52,6 +52,5 @@ public interface SpecificationService {
     @ApiOperation(value="删除规格中的数据")
     @DeleteMapping(value = "specparam/delete")
     Result<JSONObject> specDelete(Integer id);
-
 
 }

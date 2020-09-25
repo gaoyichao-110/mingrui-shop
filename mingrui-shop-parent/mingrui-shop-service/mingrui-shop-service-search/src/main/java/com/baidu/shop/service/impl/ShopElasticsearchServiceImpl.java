@@ -73,10 +73,6 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
 
-
-
-
-
     private List<GoodsDoc> esGoods() {
         SpuDTO spuDTO = new SpuDTO();
 
