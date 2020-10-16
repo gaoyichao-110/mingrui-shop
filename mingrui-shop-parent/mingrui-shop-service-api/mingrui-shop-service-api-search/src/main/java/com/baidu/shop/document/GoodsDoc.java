@@ -16,6 +16,7 @@ import java.util.Map;
  * @Date 2020/9/16
  * @Version V1.0
  **/
+//要创建的索引名
 @Document(indexName = "goods",shards = 1,replicas = 0)
 @Data
 public class GoodsDoc {

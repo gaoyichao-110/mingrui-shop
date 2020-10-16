@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>mingrui-shop-basic-upload-server</module>
+        <module>mingrui-shop-basics-user-oauth</module>
     </modules>
 
 

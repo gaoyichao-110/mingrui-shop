@@ -32,6 +32,16 @@
             <artifactId>mysql-connector-java</artifactId>
             <scope>runtime</scope><!--项目运行阶段使用-->
         </dependency>
+
+        <dependency>
+            <groupId>com.baidu</groupId>
+            <artifactId>mingrui-shop-service-api-template</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

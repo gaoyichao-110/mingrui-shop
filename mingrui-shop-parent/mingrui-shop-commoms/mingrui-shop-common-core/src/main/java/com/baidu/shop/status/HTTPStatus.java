@@ -13,4 +13,9 @@ public class HTTPStatus {
     public static final int ERROR = 500;//失败
 
     public static final int PARAMS_VALIDATE_ERROR = 5002;//参数校验失败
+
+    public static final int PARAMS_CODE_ERROR = 5003;//参数校验失败
+
+    public static final int PARAMS_NAME_PASSWORD_ERROR = 5004;//用户名或密码错误
+
 }

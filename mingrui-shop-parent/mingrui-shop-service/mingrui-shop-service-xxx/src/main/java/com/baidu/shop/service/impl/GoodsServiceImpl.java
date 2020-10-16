@@ -2,13 +2,18 @@ package com.baidu.shop.service.impl;
 
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
+import com.baidu.shop.component.MrRabbitMQ;
+import com.baidu.shop.constant.MqMessageConstant;
 import com.baidu.shop.dto.BrandDTO;
 import com.baidu.shop.dto.SkuDTO;
 import com.baidu.shop.dto.SpuDTO;
 import com.baidu.shop.entity.*;
+import com.baidu.shop.feign.ShopElasticsearchFeign;
+import com.baidu.shop.feign.TemplateFeign;
 import com.baidu.shop.mapper.*;
 import com.baidu.shop.service.BrandService;
 import com.baidu.shop.service.GoodsService;
+import com.baidu.shop.service.TemplateService;
 import com.baidu.shop.status.HTTPStatus;
 import com.baidu.shop.utils.BaiduBeanUtil;
 import com.baidu.shop.utils.ObjectUtill;
@@ -55,11 +60,31 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     @Resource
     private SkuEntityMapper skuEntityMapper;
 
+    @Autowired
+    private ShopElasticsearchFeign shopElasticsearchFeign;
+
+    @Resource
+    private TemplateService   templateService;
+
+    @Autowired
+    private MrRabbitMQ mrRabbitMQ;
+
 
     //商品新增,各种信息,各种规格
-    @Transactional
+
     @Override
     public Result<JsonObject> saveSpu(SpuDTO spuDTO) {
+
+        Integer spuId = this.saveSpuTransactional(spuDTO);
+        //发送消息,新增成功发送消息到
+        mrRabbitMQ.send(spuId + "", MqMessageConstant.SPU_ROUT_KEY_SAVE);
+
+        return this.setResultSuccess();
+    }
+
+    //新增商品要增到es库里,因为事务关系把新增商品信息放到这里边
+    @Transactional
+    public Integer saveSpuTransactional(SpuDTO spuDTO){
         Date date = new Date();
 
         //把DTO转换成class类型,因为DTO只是接参传参
@@ -79,9 +104,9 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         spuDetailEntity.setSpuId(spuId);//将刚刚新增过的spuId赋值给spuDetail中的spuId,是它们链接在一起
         spuDetailEntityMapper.insertSelective(spuDetailEntity);//然后新增spuDetail
 
-        this.saveSkuStock(spuDTO.getSkus(),spuDTO.getId(),date);
+        this.saveSkuStock(spuDTO.getSkus(),spuId,date);
 
-        return this.setResultSuccess();
+        return spuEntity.getId();
     }
 
     //商品信息查询spu,用于修改回显
@@ -100,9 +125,19 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
     }
 
     //商品信息修改
-    @Transactional
     @Override
     public Result<JsonObject> editSpu(SpuDTO spuDTO) {
+
+        this.editSpuTransactional(spuDTO);
+        //发送消息,新增成功发送消息到
+        mrRabbitMQ.send(spuDTO.getId() + "", MqMessageConstant.SPU_ROUT_KEY_UPDATE);
+
+        return this.setResultSuccess();
+    }
+
+    //新增到es库后还需要修改es库的数据也是因为事务的关系
+    @Transactional
+    public void editSpuTransactional(SpuDTO spuDTO){
         Date date = new Date();
         //把DTO转换成class类型,因为DTO只是接参传参
         SpuEntity spuEntity = BaiduBeanUtil.copyProperties(spuDTO,SpuEntity.class);
@@ -127,13 +162,22 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
         //方法中定义的参数,接收的时候参数需要赋值
         this.saveSkuStock(spuDTO.getSkus(),spuDTO.getId(),date);
+    }
+
+    //商品删除
+    @Override
+    public Result<JsonObject> delete(Integer spuId) {
+        this.deleteTransactional(spuId);
+        //发送消息,删除成功发送消息到
+        mrRabbitMQ.send(spuId + "", MqMessageConstant.SPU_ROUT_KEY_DELETE);
 
         return this.setResultSuccess();
     }
-    //商品删除
+
+    //新增到es库后还需要删除es库的数据也是因为事务的关系
     @Transactional
-    @Override
-    public Result<JsonObject> delete(Integer spuId) {
+    public void deleteTransactional(Integer spuId){
+
         spuMapper.deleteByPrimaryKey(spuId);
         spuDetailEntityMapper.deleteByExample(spuId);
         //查询出来skuId
@@ -143,9 +187,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
             skuEntityMapper.deleteByIdList(longs);
             stockEntityMapper.deleteByIdList(longs);
         }
-        return this.setResultSuccess();
     }
-
 
 
     //查询出sku的数据
@@ -155,7 +197,8 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         example.createCriteria().andEqualTo("spuId",spuId);//根据spuId查询出来当前spuId相等的sku的一条数据,就是通过spuId查询出来了和当前传入的spuId相对应的sku数据
         List<SkuEntity> skuEntities = skuEntityMapper.selectByExample(example);
         //查询出来一条的sku数据,将这个因为sku是一个集合,将sku数据遍历,找到skuId,将skuId作为一个Long类型的List集合返回回去
-        return skuEntities.stream().map(sku -> sku.getId()).collect(Collectors.toList());
+        List<Long> collect = skuEntities.stream().map(sku -> sku.getId()).collect(Collectors.toList());
+        return collect;
     }
 
     //新增sku和stock
