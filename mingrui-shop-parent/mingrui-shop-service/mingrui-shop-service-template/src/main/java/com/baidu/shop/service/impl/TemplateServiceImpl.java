@@ -62,6 +62,16 @@ public class TemplateServiceImpl extends BaseApiService implements TemplateServi
     private TemplateEngine templateEngine;
 
     @Override
+    public Result<JSONObject> delHTMLBySpuId(Integer spuId) {
+        File file = new File(staticHTMLPath + File.separator + spuId + ".html");
+        if(!file.delete()){
+            return this.setResultError("文件删除失败");
+        }
+
+        return this.setResultSuccess();
+    }
+
+    @Override
     public Result<JSONObject> createStaticHTMLTemplate(Integer spuId) {
 
         //获取spu的详细信息放到map中
@@ -109,6 +119,7 @@ public class TemplateServiceImpl extends BaseApiService implements TemplateServi
         }
         return this.setResultSuccess();
     }
+
 
 
 

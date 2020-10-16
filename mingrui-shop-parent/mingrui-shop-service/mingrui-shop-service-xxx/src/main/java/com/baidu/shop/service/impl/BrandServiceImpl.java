@@ -60,7 +60,7 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
 
         String[] split = brandList1.split(",");
         List<String> strings = Arrays.asList(split);
-        List<Integer> collect = strings.stream().map(brandMapper -> Integer.parseInt(brandList1)).collect(Collectors.toList());
+        List<Integer> collect = strings.stream().map(brandMapper -> Integer.parseInt(brandMapper)).collect(Collectors.toList());
 
         List<BrandEntity> list = brandMapper.selectByIdList(collect);
 

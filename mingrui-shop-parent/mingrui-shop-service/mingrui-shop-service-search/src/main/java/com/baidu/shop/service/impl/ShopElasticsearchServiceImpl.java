@@ -72,19 +72,38 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
-
-    private List<GoodsDoc> esGoods() {
+    @Override
+    public Result<JSONObject> saveData(Integer spuId) {
+        //通过spuId查询数据
         SpuDTO spuDTO = new SpuDTO();
+        spuDTO.setId(spuId);
+
+        List<GoodsDoc> goodsDocs = this.esGoods(spuDTO);
+        elasticsearchRestTemplate.save(goodsDocs.get(0));
+        return this.setResultSuccess();
+    }
+
+    @Override
+    public Result<JSONObject> delData(Integer spuId) {
+        GoodsDoc goodsDoc = new GoodsDoc();
+        goodsDoc.setId(spuId.longValue());
+        elasticsearchRestTemplate.delete(goodsDoc);
+        return this.setResultSuccess();
+    }
+
+
+    private List<GoodsDoc> esGoods(SpuDTO spuDTO) {
 
         List<GoodsDoc> goodss = new ArrayList<>();
 
+        //查询出来spuDTO的信息
         Result<List<SpuDTO>> spuInfo = goodsFeign.getSpuInfo(spuDTO);
 
         if(spuInfo.getCode() == HTTPStatus.OK){
 
             //spu数据
             List<SpuDTO> spuList = spuInfo.getData();
-
+            //将查询出来的spuDTO方法放到GoodsDoc里
             spuList.stream().forEach(spu -> {
 
                 GoodsDoc goodsDoc = new GoodsDoc();
@@ -104,13 +123,16 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
                 //通过spuID查询skuList
                 Map<List<Long>, List<Map<String, Object>>> skus = this.getSkusAndPriceList(spu.getId());
 
+                //遍历传过来的sku数据,将sku的数据放到GoodsDoc中去
                 skus.forEach((key,value) ->{
                     goodsDoc.setPrice(key);
                     goodsDoc.setSkus(JSONUtil.toJsonString(value));
                 });
 
+                //通过spu信息查询出规格参数
                 Map<String, Object> specMap = this.getSpecMap(spu);
 
+                //将规格参数也放到GoodsDoc中
                 goodsDoc.setSpecs(specMap);
                 goodss.add(goodsDoc);
                 System.out.println(goodss);
@@ -130,15 +152,16 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         //通过spuId查询到sku的信息
         Result<List<SkuDTO>> skuResult = goodsFeign.getSkuBySpuID(spuId);
 
+        //建两个集合来接收获取到的sku参数,等一会将两个参数传上去
         List<Long> priceList = new ArrayList<>();
-
         List<Map<String, Object>> skuMap = null;
+
         //判断sku传来的数据==200
         if(skuResult.getCode() == HTTPStatus.OK){
 
             //获得到sku的数据
             List<SkuDTO> skuList = skuResult.getData();
-            //遍历传来的数据,将值赋到集合中去
+            //遍历sku传来的数据,将值赋到一个map集合中去,等会再将这个map集合返回回去
             skuMap = skuList.stream().map(sku -> {
 
                 Map<String, Object> map = new HashMap<>();
@@ -148,13 +171,14 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
                 map.put("images", sku.getImages());
                 map.put("price", sku.getPrice());
 
+                //一个返回到list集合,一个返回到map集合中
                 priceList.add(sku.getPrice().longValue());
-
                 return map;
 
             }).collect(Collectors.toList());
         }
 
+        //获取到两个集合的参数,返回回去
         hashMap.put(priceList,skuMap);
         return hashMap;
     }
@@ -164,6 +188,7 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
 
         //商品信息
         SpecParamDTO specParamDTO = new SpecParamDTO();
+        //查询cid3的下面的规格参数
         specParamDTO.setCid(spuDTO.getCid3());
         Result<List<SpecParamEntity>> specParamResult = specificationFeign.listSpecParam(specParamDTO);
 
@@ -180,16 +205,18 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
             if(spuDetailBydSpu.getCode() == HTTPStatus.OK){
                 SpuDetailEntity spuDetailList = spuDetailBydSpu.getData();
 
-                //通用规格参数的值
+                //通用规格参数的值GenericSpec通用参数的属性
                 String genericSpec = spuDetailList.getGenericSpec();
                 Map<String, String> genericSpecMap  = JSONUtil.toMapValueString(genericSpec);
 
-                //特有规格参数的值
+                //特有规格参数的值SpecialSpec特有规格参数的属性
                 String specialSpec = spuDetailList.getSpecialSpec();
                 Map<String, List<String>> specialSpecMap  = JSONUtil.toMapValueStrList(specialSpec);
 
                 paramList.stream().forEach(param -> {
+                    //判断一下是否是通用属性
                     if(param.getGeneric()){
+                        //判断一下是否是数字类型,是否是用户过滤搜索
                         if(param.getNumeric() && param.getSearching()){
                             specMap.put(param.getName(),this.chooseSegment(genericSpecMap.get(param.getId()+""),param.getSegments(),param.getUnit()));
                         }else{
@@ -206,6 +233,7 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         return specMap;
     }
 
+    //用来做分段间隔值的
     private String chooseSegment(String value, String segments, String unit) {
         double val = NumberUtils.toDouble(value);
         String result = "其它";
@@ -233,8 +261,10 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         return result;
     }
 
+
     @Override
     public Result<JSONObject> initGoodsData() {
+        //创建一个索引
         IndexOperations indexOps = elasticsearchRestTemplate.indexOps(GoodsDoc.class);
         if(!indexOps.exists()){
             indexOps.create();
@@ -243,7 +273,8 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
             log.info("映射创建成功");
         }
 
-        List<GoodsDoc> goodsDocs = this.esGoods();
+        //esGoods里边有spu,sku和各种规格参数
+        List<GoodsDoc> goodsDocs = this.esGoods(new SpuDTO());
         elasticsearchRestTemplate.save(goodsDocs);
 
         return this.setResultSuccess();
@@ -309,6 +340,8 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         return new GoodsResponse(total,totalPage,brandByIdList,categoryEntityList,goodsDoc,specParamListMap);
 
     }
+
+
 
     //取商品的规格参数
     private Map<String, List<String>> getspecParam(Integer hotCid,String search){
@@ -390,6 +423,7 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
 
         //查询出品牌和分类的信息
         //通过cid3查询出来它下边的商品信息,还有通过brandId查询出来cid下边商品的品牌信息
+        //把cid放到聚合桶内
         builder.addAggregation(AggregationBuilders.terms("cid_agg").field("cid3"));
         builder.addAggregation(AggregationBuilders.terms("brand_agg").field("brandId"));
 
@@ -401,6 +435,7 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         Terms cid_agg = aggregations.get("cid_agg");
 
         //返回了一个cid的集合,通过这个id的集合去查询数据
+        //获得聚合桶里边的数据
         List<? extends Terms.Bucket> cidBuckets = cid_agg.getBuckets();
 
         List<Integer> hotCidArr = Arrays.asList(0);
@@ -434,9 +469,7 @@ public class ShopElasticsearchServiceImpl extends BaseApiService implements Shop
         //得到brandId集合去查询brand的信息
         List<? extends Terms.Bucket> buckets = brand_agg.getBuckets();
 
-        List<String> brandList = buckets.stream().map(brandBucket -> {
-            return brandBucket.getKeyAsString();
-        }).collect(Collectors.toList());
+        List<String> brandList = buckets.stream().map(brandBucket -> brandBucket.getKeyAsNumber().intValue() + "").collect(Collectors.toList());
 
         String brandList1 = String.join(",", brandList);
         Result<List<BrandEntity>> brandByIdList = brandFeign.getBrandByIdList(brandList1);
