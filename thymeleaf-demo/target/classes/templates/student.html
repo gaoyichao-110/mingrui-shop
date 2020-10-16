@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en"   xmlns:th="http://www.thymeleaf.org"   >
+<head>
+    <meta charset="UTF-8">
+    <title>测试thymeleaf</title>
+</head>
+<body>
+你好，<span th:text="${stu.code}"></span><br/>
+密码是:<span data-th-text="${stu.pass}"></span>
+你的年龄是:<span th:text="${stu['age']}"></span>
+你喜欢的颜色是:<span th:utext="${stu.likeColor}"></span>
+<div th:object="${stu}">
+    <span th:text="*{code}"></span>
+    <span th:text="*{pass}"></span>
+    <span th:text="*{age}"></span>
+    <span th:text="*{likeColor}"></span><br/>
+</div>
+
+<!-- 可以调用字符串截取，分割等函数-->
+<span th:text="${stu.code.substring(2)}"></span><br>
+<span th:text="${stu.code.split('')[1]}"></span><br>
+<br/>
+<span th:text="666"></span>
+<br/>
+<span th:text="1024*2"></span>
+<br/>
+<span th:if="${stu.age} >=18">
+    成年
+</span>
+<br/>
+<span th:text="|${stu.code}你真的很棒|"></span>
+<br/>
+<span th:text="${stu.age}*2"></span>
+<br/>
+<span th:text="${stu.age}>=18?'成年':'未成年'"></span>
+
+
+</body>
+</html>

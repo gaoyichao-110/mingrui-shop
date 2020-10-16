@@ -9,7 +9,7 @@ import com.baidu.shop.entity.SpecificationEntity;
 import com.baidu.shop.validate.group.MingruiOperation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Delete;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +21,7 @@ public interface SpecificationService {
 //    接口文档注解
     @ApiOperation(value="通过条件查询规格组")
     @GetMapping(value="specgroup/listSpecification")
-    public Result<List<SpecificationEntity>> listSpecification(SpecificationDTO specificationDTO);
+    public Result<List<SpecificationEntity>> listSpecification(@SpringQueryMap SpecificationDTO specificationDTO);
 
     @ApiOperation(value = "给规格新增数据")
     @PostMapping(value="specgroup/save")
@@ -36,9 +36,9 @@ public interface SpecificationService {
     public Result<JSONObject> delete(Integer id);
 
 
-    @ApiOperation(value="通过规格id查询里边参数")
+    @ApiOperation(value="通过条件查询规格参数")
     @GetMapping(value="specparam/listSpecParam")
-    public Result<List<SpecParamEntity>> listSpecParam(SpecParamDTO specParamDTO);
+    public Result<List<SpecParamEntity>> listSpecParam(@SpringQueryMap SpecParamDTO specParamDTO);
 
     @ApiOperation(value="给规格上传参数")
     @PostMapping(value = "specparam/save")
@@ -52,6 +52,5 @@ public interface SpecificationService {
     @ApiOperation(value="删除规格中的数据")
     @DeleteMapping(value = "specparam/delete")
     Result<JSONObject> specDelete(Integer id);
-
 
 }

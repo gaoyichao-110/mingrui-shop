@@ -40,10 +40,24 @@ public class JSONUtil {
         return gson;
     }
 
+
     public static String toJsonString(Object obj) {
         return gson.toJson(obj);
     }
 
+
+    public static Map<String, String> toMapValueString(String json) {
+
+        Map<String, String> map = gson.fromJson(json, new TypeToken<Map<String, String>>() {}.getType());
+        return map;
+    }
+
+    public static Map<String, List<String>> toMapValueStrList(String json) {
+
+        Map<String, List<String>> map = gson.fromJson(json, new TypeToken<Map<String, List<String>>>() {}.getType());
+
+        return map;
+    }
     public static <T> T toBean(String json, Class<T> clz) {
 
         return gson.fromJson(json, clz);

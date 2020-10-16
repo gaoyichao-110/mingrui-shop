@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface GoodsService {
 
     @ApiOperation(value="获取spu信息")
     @GetMapping(value = "goods/getSpuIno")
-    public Result<PageInfo<SpuEntity>> getSpuInfo(SpuDTO spuDTO);
+    public Result<List<SpuDTO>> getSpuInfo(@SpringQueryMap SpuDTO spuDTO);
 
     @ApiOperation(value = "给spu新增信息")
     @PostMapping(value = "goods/saveSpu")
@@ -28,13 +29,11 @@ public interface GoodsService {
 
     @ApiOperation(value = "获取spu详情信息")
     @GetMapping(value = "goods/getSpuDetailBydSpu")
-    public Result<SpuDetailEntity> getSpuDetailBydSpu(Integer spuId);
-
-
+    public Result<SpuDetailEntity> getSpuDetailBydSpu(@RequestParam @SpringQueryMap Integer spuId);
 
     @ApiOperation(value = "获取sku的信息")
     @GetMapping(value="goods/getSkuBySpuID")
-    Result<List<SkuDTO>> getSkuBySpuID(Integer spuId);
+    Result<List<SkuDTO>> getSkuBySpuID(@RequestParam @SpringQueryMap Integer spuId);
 
     @ApiOperation(value = "给spu修改信息")
     @PutMapping(value = "goods/saveSpu")

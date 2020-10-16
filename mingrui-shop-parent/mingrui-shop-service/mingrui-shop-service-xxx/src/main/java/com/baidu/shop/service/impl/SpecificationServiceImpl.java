@@ -46,7 +46,7 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
         Example example = new Example(SpecificationEntity.class);
 
         //通过分类id查询数据
-        if(ObjectUtill.isNotNull(specificationDTO.getCid()))example.createCriteria().andEqualTo("cid",specificationDTO.getCid());
+        if(ObjectUtill.isNotNull(specificationDTO.getCid())) example.createCriteria().andEqualTo("cid",specificationDTO.getCid());
 
         List<SpecificationEntity> list = specificationEntityMapper.selectByExample(example);
 
@@ -102,6 +102,10 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
 
         if(ObjectUtill.isNotNull(specParamDTO.getCid())){
             criteria.andEqualTo("cid",specParamDTO.getCid());
+        }
+
+        if(ObjectUtill.isNotNull(specParamDTO.getSearching())){
+            criteria.andEqualTo("searching",specParamDTO.getSearching());
         }
 
 

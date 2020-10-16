@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en"   xmlns:th="http://www.thymeleaf.org"   >
+<head>
+    <meta charset="UTF-8">
+    <title>测试thymeleaf</title>
+</head>
+<body>
+你好，<span th:text="${stu.code}"></span>
+密码是:<span data-th-text="${stu.pass}"></span>
+你的年龄是:<span th:text="${stu['age']}"></span>
+你喜欢的颜色是:<span th:utext="${stu.likeColor}"></span>
+
+</body>
+</html>

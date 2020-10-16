@@ -6,6 +6,7 @@ import com.baidu.shop.entity.CategoryEntity;
 import com.baidu.shop.validate.group.MingruiOperation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,5 +35,7 @@ public interface CategoryService {
     @GetMapping(value = "category/getByBrand")
     public Result<List<CategoryEntity>> getByBrand(@RequestParam Integer brandId);
 
-
+    @ApiOperation(value = "通过品牌id集合查询出来包含分类的信息")
+    @GetMapping(value = "category/getCategoryByIdList")
+    Result<List<CategoryEntity>> getCategoryByIdList(@RequestParam @SpringQueryMap String cidStr);
 }
